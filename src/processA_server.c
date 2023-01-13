@@ -8,6 +8,9 @@
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h> 
 #include <signal.h>
 #include <semaphore.h>
 #define SEM_PATH_1 "/sem_AOS_1"
@@ -311,6 +314,27 @@ int main(int argc, char *argv[]) {
 		}
 		exit(EXIT_FAILURE);
 	}
+
+    int sockfd, newsockfd, port_num, clilen, n;
+    char input[20];
+    struct sockaddr_in serv_addr, cli_addr;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     if (sockfd < 0) {
+        perror("ERROR opening socket");
+        exit(EXIT_FAILURE);
+     }
+     port_num=20200;
+     bzero((char *) &serv_addr, sizeof(serv_addr));
+     serv_addr.sin_family = AF_INET;
+     serv_addr.sin_addr.s_addr = INADDR_ANY;
+     serv_addr.sin_port = htons(port_num);
+     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+              perror("ERROR on binding");
+              exit(EXIT_FAILURE);
+     }
+    listen(sockfd,5);
+    clilen = sizeof(cli_addr);
+    bzero(input,20);
     
     // Infinite loop
     while (TRUE) {
@@ -327,20 +351,30 @@ int main(int argc, char *argv[]) {
                 mvprintw(1, (5*COLS)/11, "Waiting for command...");
             }
         }
+        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        if (newsockfd < 0) {
+          perror("ERROR on accept");
+          exit(EXIT_FAILURE);
+        }
+        n = read(newsockfd,input,255);
+        if (n < 0)  {
+            perror("ERROR reading from socket");
+            exit(EXIT_FAILURE);
+        }
 
         // Else, if user presses print button...
-        else if(cmd == KEY_MOUSE) {
+        if(strcmp(input, p)==0) {
         	if(getmouse(&event) == OK) {
                 if(check_button_pressed(print_btn, &event)) {
-                
+                    
                 }
             }
         }
 
         // If input is an arrow key, move circle accordingly...
-        else if(cmd == KEY_LEFT || cmd == KEY_RIGHT || cmd == KEY_UP || cmd == KEY_DOWN) {
-            switch(cmd) {
-            	case KEY_LEFT:
+        else if(strcmp(input, "l")==0 || strcmp(input, "r")==0|| strcmp(input, "u")==0 || strcmp(input, "d")==0) {
+            switch(input) {
+            	case "l":
             		// horizonthal position is decremented
             		// we check if we are inside the limited area where we can move
             		/*if (posx > -40) {
@@ -351,7 +385,6 @@ int main(int argc, char *argv[]) {
             			move_bmp(posx, posy);
             			// we prepare the data to be written into the shared memory
             			vectorize();
-
 				// decrement the counter of first semaphore
 				if (sem_wait(sem_id1)==-1) {
 					perror("It is not possible execute wait");
@@ -368,10 +401,8 @@ int main(int argc, char *argv[]) {
 					}
 					exit(EXIT_FAILURE);
 				}
-
 				// critic region: process writes on shared memory
             			write_shm(shm_fd);
-
 				// increment the counter of second semaphore
 				if (sem_post(sem_id2)==-1) {
 					perror("It is not possible execute post");
@@ -391,7 +422,7 @@ int main(int argc, char *argv[]) {
           			usleep(20000);
             		}*/
             		break;
-            	case KEY_RIGHT:
+            	case "r":
             		// horizonthal position is incremented
             		// we check if we are inside the limited area where we can move
             		/*if (posx < 39) {
@@ -402,7 +433,6 @@ int main(int argc, char *argv[]) {
             			move_bmp(posx, posy);
             			// we prepare the data to be written into the shared memory
             			vectorize();
-
 				// decrement the counter of first semaphore
 				if (sem_wait(sem_id1)==-1) {
 					perror("It is not possible execute wait");
@@ -419,10 +449,8 @@ int main(int argc, char *argv[]) {
 					}
 					exit(EXIT_FAILURE);
 				}
-
 				// critic region: process writes on shared memory
             			write_shm(shm_fd);
-
 				// increment the counter of second semaphore
 				if (sem_post(sem_id2)==-1) {
 					perror("It is not possible execute post");
@@ -442,7 +470,7 @@ int main(int argc, char *argv[]) {
             			usleep(20000);
             		}*/
             		break;
-            	case KEY_DOWN:
+            	case "u":
             		// vertical position is decremented
             		// we check if we are inside the limited area where we can move
             		/*if (posy > -14) {
@@ -453,7 +481,6 @@ int main(int argc, char *argv[]) {
             			move_bmp(posx, posy);
             			// we prepare the data to be written into the shared memory
             			vectorize();
-
 				// decrement the counter of first semaphore
 				if (sem_wait(sem_id1)==-1) {
 					perror("It is not possible execute wait");
@@ -470,10 +497,8 @@ int main(int argc, char *argv[]) {
 					}
 					exit(EXIT_FAILURE);
 				}
-
 				// critic region: process writes on shared memory
             			write_shm(shm_fd);
-
 				// increment the counter of second semaphore
 				if (sem_post(sem_id2)==-1) {
 					perror("It is not possible execute post");
@@ -493,7 +518,7 @@ int main(int argc, char *argv[]) {
             			usleep(20000);
             		}*/
             		break;
-            	case KEY_UP:
+            	case "d":
             		// vertical position is incremented
             		// we check if we are inside the limited area where we can move
             		/*if (posy < 15) {
@@ -504,7 +529,6 @@ int main(int argc, char *argv[]) {
             			move_bmp(posx, posy);
             			// we prepare the data to be written into the shared memory
             			vectorize();
-
 				// decrement the counter of first semaphore
 				if (sem_wait(sem_id1)==-1) {
 					perror("It is not possible execute wait");
@@ -521,10 +545,8 @@ int main(int argc, char *argv[]) {
 					}
 					exit(EXIT_FAILURE);
 				}
-
 				// critic region: process writes on shared memory
             			write_shm(shm_fd);
-
 				// increment the counter of second semaphore
 				if (sem_post(sem_id2)==-1) {
 					perror("It is not possible execute post");
