@@ -88,8 +88,32 @@ int main() {
   		return 0;
   	}
   	else if (decision[0] == '2' && strlen(decision) == 2) {
-  		printf("%s","S");
-  		exit(1);
+  	
+  		// this prevents to close the program on terminal window
+  	 	struct sigaction s_allert;
+  	 	memset(&s_allert, 0, sizeof(s_allert));
+  	 	s_allert.sa_handler=SIG_IGN;
+		
+  	 	// catch signal handler
+  	 	if (sigaction(SIGINT, &s_allert, 0)==-1) {
+  	    		perror("Can't catch the signal");
+  	 	}
+  	 	
+  		// define list of arguments of processes
+  		char * arg_list_A[] = { "/usr/bin/konsole", "-e", "./bin/processA_server", NULL };
+  		
+  		pid_procA = spawn("/usr/bin/konsole", arg_list_A);
+  		
+  		int status;
+  		
+  		// wait that procA ends
+  		if (waitpid(pid_procA, &status, 0)==-1) {
+  	  		perror("Error in waitpid 1!");
+  	  		return -1;
+  		}
+  		
+  		printf ("Main program exiting with status %d\n", status);
+  		return 0;
   	}
   	else if (decision[0] == '3' && strlen(decision) == 2) {
   		// create segment of shared memory
@@ -174,4 +198,5 @@ int main() {
   		printf ("Main program exiting with status %d\n", status);
   		return 0;
   	}
+}
 }
