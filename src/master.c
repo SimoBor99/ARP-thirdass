@@ -64,10 +64,10 @@ int main() {
   	if (decision[0] == '1' && strlen(decision) == 2) {
 		printf("Insert host and port number");
 		printf("%s","> ");
-		//if (fgets(host, sizeof(host), stdin)==0) {
-			//perror("No input");
-		//}
-		//printf("%s","> ");
+		if (fgets(host, sizeof(host), stdin)==0) {
+			perror("No input");
+		}
+		printf("%s","> ");
 		if (fgets(port_number, sizeof(port_number), stdin)==0) {
 			perror("No input");
 		}
@@ -82,7 +82,7 @@ int main() {
   	 	}
   	 	
   	 	// define list of arguments of processes
-  		char * arg_list_A[] = { "/usr/bin/konsole", "-e", "./bin/processA_client", port_number, NULL };
+  		char * arg_list_A[] = { "/usr/bin/konsole", "-e", "./bin/processA_client", host, port_number, NULL };
   		
   		pid_procA = spawn("/usr/bin/konsole", arg_list_A);
   		
