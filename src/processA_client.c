@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     mvprintw(1,COLS/10, "Welcome! Move the cross with the arrow keys or take a snaphot of the circle!");
 
     // stuff for socket
-    int port_num=20200;
+    int port_num=atoi(argv[2]);
     struct sockaddr_in serv_addr;
     struct hostent *server;
     int n;
@@ -50,10 +50,15 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    server=gethostbyname("localhost");
+    server=gethostbyname(argv[1]);
     
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (argc!=2) {
+        perror("No such arguments");
         exit(EXIT_FAILURE);
     }
 
@@ -183,3 +188,4 @@ int main(int argc, char *argv[])
     endwin();
     return 0;
 }
+
