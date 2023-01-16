@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     mvprintw(1,COLS/10, "Welcome! Move the cross with the arrow keys or take a snaphot of the circle!");
 
     // stuff for socket
-    int port_num=atoi(argv[2]);
+    //int port_num=atoi(argv[1]);
     struct sockaddr_in serv_addr;
     struct hostent *server;
     int n;
@@ -52,17 +52,17 @@ int main(int argc, char *argv[])
 
 
     server = (struct hostent *)malloc(sizeof(struct hostent));
-    server=gethostbyname(argv[1]);
+    server=gethostbyname("localhost");
     
     if (server == NULL) {
         perror("ERROR, no such host");
         //exit(EXIT_FAILURE);
     }
 
-    if (argc!=3) {
+    /*if (argc!=3) {
         perror("No such arguments");
         //exit(EXIT_FAILURE);
-    }
+    }*/
 
     // set all values in a buffer to zero
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     bcopy((char *)server->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
 
      // assign the port number to the struct
-    serv_addr.sin_port = htons(port_num);
+    serv_addr.sin_port = htons(20005);
 
     // establish a connection to the server
     if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr))<0) {
