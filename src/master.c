@@ -63,10 +63,14 @@ int main() {
   	fgets(decision,sizeof(decision),stdin);
   	if (decision[0] == '1' && strlen(decision) == 2) {
 		printf("Insert host and port number");
-		if (fgets(host, sizeof(host), stdin)==0)
+		printf("%s","> ");
+		if (fgets(host, sizeof(host), stdin)==0) {
 			perror("No input");
-		if (fgets(port_number, sizeof(port_number), stdin)==0)
+		}
+		printf("%s","> ");
+		if (fgets(port_number, sizeof(port_number), stdin)==0) {
 			perror("No input");
+		}
   		// this prevents to close the program on terminal window
   	 	struct sigaction s_allert;
   	 	memset(&s_allert, 0, sizeof(s_allert));
@@ -94,8 +98,90 @@ int main() {
   		return 0;
   	}
   	else if (decision[0] == '2' && strlen(decision) == 2) {
-  		printf("%s","S");
-  		exit(1);
+  		
+  		printf("Insert port number");
+		printf("%s","> ");
+		if (fgets(port_number, sizeof(port_number), stdin)==0) {
+			perror("No input");
+		}
+  		
+  		// create segment of shared memory
+  		shm_fd=shm_open(shm_name, O_CREAT | O_RDWR, 0666);
+  	
+  		// check if the segment memory is valid
+  		if (shm_fd==-1) {
+    			printf("Shared memory segment failed\n");
+    			return shm_fd;
+  		}
+	
+  		// truncate to the correct size
+  		if (ftruncate(shm_fd, dim_mem)==-1) {
+    			perror("Cannot truncate!");
+    			return shm_fd;
+  		}
+  	
+  		// map the address process
+  		ptr= (char*) mmap(0, sizeof(char), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	
+  		// check if the mapping has done
+  		if (ptr == MAP_FAILED) {
+    			printf("Map failed\n");
+    			exit(EXIT_FAILURE);
+  		}
+  	
+  		// this prevents to close the program on terminal window
+  	 	struct sigaction s_allert;
+  	 	memset(&s_allert, 0, sizeof(s_allert));
+  	 	s_allert.sa_handler=SIG_IGN;
+		
+  	 	// catch signal handler
+  	 	if (sigaction(SIGINT, &s_allert, 0)==-1) {
+  	    		perror("Can't catch the signal");
+  	 	}
+  	 	
+  		// define list of arguments of processes
+  		char * arg_list_A[] = { "/usr/bin/konsole", "-e", "./bin/processA_server", shm_name, host, NULL };
+  		char * arg_list_B[] = { "/usr/bin/konsole", "-e", "./bin/processB", shm_name, NULL };
+  		
+  		pid_procA = spawn("/usr/bin/konsole", arg_list_A);
+  		pid_procB = spawn("/usr/bin/konsole", arg_list_B);
+  		
+  		int status;
+  		
+  		// wait that procA ends
+  		if (waitpid(pid_procA, &status, 0)==-1) {
+  	  		perror("Error in waitpid 1!");
+  	  		return -1;
+  		}
+  		
+  		usleep(20000);
+	
+  		// wait that procA ends
+  		if (waitpid(pid_procB, &status, 0)==-1) {
+  	  		perror("Error in waitpid 2!");
+  	  		return -1;
+  		}
+	
+  		// close segment of shared memory
+  	 	if (close(shm_fd)==-1) {
+  	  		perror("Cannot close the the file descriptor");
+  	  		exit(EXIT_FAILURE);
+  		}
+	
+  		//remove the mapping
+  		if (munmap(ptr, sizeof(char))==-1) {
+  	  		perror("Cannot unmapp the address");
+  	  		exit(EXIT_FAILURE);
+  		}
+  	
+  		// unlinking the shared memory
+  		if (shm_unlink(shm_name)==-1) {
+  		  	printf("Error removing %s\n", shm_name);
+  		  	exit(EXIT_FAILURE);
+  		}
+  	
+  		printf ("Main program exiting with status %d\n", status);
+		return 0;	
   	}
   	else if (decision[0] == '3' && strlen(decision) == 2) {
   		// create segment of shared memory
@@ -181,4 +267,3 @@ int main() {
   		return 0;
   	}
 }
-
