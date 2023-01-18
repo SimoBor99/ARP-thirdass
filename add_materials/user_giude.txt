@@ -1,5 +1,7 @@
 # ARP Third assignment
 
+Github repo: https://github.com/SimoBor99/ARP-thirdass
+
 Installing and running
 ----------------------------------------------
 Before running the program with shell file, it is fundamental to install two libraries:
