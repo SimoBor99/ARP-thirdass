@@ -23,22 +23,29 @@ In order to properly compile programs which use the libbitmap library, you first
 
 ``` export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"```
 
-After doing that, it is the time to create the binary of all 3 processes and run the programm. Before running it, you need to make second.sh executable, by using on the terminal:
+After doing that, it is the time to create the binary of all 5 processes and run the programm. Before running it, you need to make third.sh executable, by using on the terminal:
 
-``` chmod u+x second.sh```
+``` chmod u+x third.sh```
 
 You can find second.sh into ```add_materials``` folder, but, when launched, this file must be in the same folder of the project. 
 Then launch it to create all binary and execute the program, by the command:
 
-```./second.sh```
+```./third.sh```
 
 Once you have done this, the program is successfully launched!
 
-Description of the program
+Description of the program ( user guide)
 ----------------------------------------------
 
 This program simulates a typical vision system, able to track an object in a 2-D plane.
-After starting, the program spawns two different konsole windows: one for the camera where a RGB image of the object will be displayed (process A) and one for simulating the extraction of a feature from the image (process B).
+After starting, you can find three different option for execute the program:
+* **Option 1**: if you press '1' on keyboard, you are ask to insert the host name, which is the ip of the server ( if you run the program in the same machine enter ```localhost```, otherwise use the ip of the other computer; you can know it by press on terminal ```ip -a```) and the port number ( typicaly the port number above the 20000 is avaiable, but pay attention to inseet the same value of the server) for allowing the client to connect on that port; this option allows you to execute the program in client mode, that implies you can controll the green cross of another computer, by clicking the one of four arrows and you can make a screenshot of the current position, by click on the print button, which is in the console window. 
+**Important remarke**: you can launch the program in client mode if and only if there is a server; so someone have had to launch the same program in server mode, otherwise the client program crash istantaneously.
+
+* **Option 2**: if you press '2' on keyboard, you are ask to insert only the port number, and then it spawns two windows, that are the same of second assignment; this option allows you to execute the program in server mode, that means yoy cannot control directly the green cross, but someone else, who is connected on the same net, can controll your cross. In this mode you can simply see the cross moves and, consequently, the '0' and hyphens of other window, which stand for the trajectory of the centre.
+
+
+* **Option 3**: is the same option of the second assignment. So the program spawns two different konsole windows: one for the camera where a RGB image of the object will be displayed (process A) and one for simulating the extraction of a feature from the image (process B).
 More precisely, in the process A window it is possible to do two things:
 * moving the image, using the arrow keys on your keyboard;
 * pressing the 'P' button, which will make the program take a snaphot of the image and save it on a .bpm file, inside the 'out' folder; if you press several times the P button, you will see many captures in the out folder, named as **snapN.bmp**, where N stands for the number of screenshot.
@@ -48,14 +55,19 @@ The movement of the image is not completely free: in fact, there are horizonthal
 On the process B window, the center of the image will be shown, which is the extracted feature.
 If we move the image on the process A, the center of the image on process B will also move, and leave the image trajectory behind itself.
 
-The program can be terminated if and only if you press ctrl+c on the two **konsole** windows; if you press involuntary ctrl+c on the **terminal** window, do not be worry: the program will not end unless you press, as it has written before, ctrl+c on the two **konsole** windows.
+The program can be terminated in several ways:
+* if you are server, you can press ctrl+c on the two **konsole** windows; if you press involuntary ctrl+c on the **terminal** window, do not be worry: the program will not end unless you press, as it has written before, ctrl+c on the two **konsole** windows;
+* if you are client, you can press ctrl+c on the only one **konsole** window; if you press involuntary ctrl+c on the **terminal** window, do not be worry: the program will not end unless you press, as it has written before, ctrl+c on the one **konsole** window;
+* if you are in the initial menu, any other key button that is pressed let you to exit from the whole program.
 
 Development of the program
 ----------------------------------------------
 
-The program consists in three processes:
+The program consists in five processes:
 
 * **Master process** This is the process which creates, truncates the segment of shared memory and starts everything: after starting its execution, this process spawns two other processes, passing them, as argument, the name of shared memory. When all two children ends their execution ( user presses ctrl+c), it closes the file descriptor, unmap its memory address and then unlink the shared segment memory.
+
+* **Process A_client** This process shows a grapich interface with a blue print button. It creates a socket, for sending to a server, which can be the same machine if the user wants, the arrow button that has been pressed or the click on 'P' button. It is important to underline that the server must be exist or, in other words, 
 
 * **Process A** This process shows a grapich interface, where there are a sort of green "cross" and a P button. If the P button is pressed, a screenshot of the image is captured and saved. Process A has the task to register as bmp file, in the shared memory, the current position of the circle in the 80x30 px area. Firstly it creates the image of the circle, with a readius of 30 px and spawns it in the middle of the area, then, every time the user presses any arrow buttons on the keyboard, it creates a new image of the current position of the figure, which replaces the old one. The resolution of image is 1600x600 px, so there is a factor of 20x in the building of it. Actually the process does not share the bmp file in the shared memory, because it is a dynamic structure; there is one more step for doing that: it copies, bit for bit, the whole structure into an array of char and, obviously, shares it. The vector is built in the same way: if it finds colored pixel, sets '1', otherwise '0'. When the user presses ctrl+C on keyboard, this process closes all file descriptor, unlinks semaphores and terminates its own execution.
 
