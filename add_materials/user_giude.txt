@@ -1,5 +1,7 @@
 # ARP Third assignment
 
+Github repo: https://github.com/SimoBor99/ARP-thirdass
+
 Installing and running
 ----------------------------------------------
 Before running the program with shell file, it is fundamental to install two libraries:
@@ -75,3 +77,4 @@ The program consists in five processes:
 
 * **Process B** This process shows a grapich interface, where at the beggining there is a 0 in the middle. It continuosly reads the data from shared memory, converts them into a bitmap file, which size is now 80x30 px, so it resizes the image dividing by a factor of 20x; then it has to find the current center of the circle, and, finally, draws the trajectory of it. For finding the center of the circle, process B scans the whole vector associates to the bitmap structure, which has 960000 elements, and, after finding 59 adjacent colored pixel ( setted as character '1' in the vector), it register the coordinates of the center; if the 59 consecutive pixels are not found, it means that we are close to the upper/lower border and in this case we check where the maximum number of consecutive blue pixels was located, then we have found the center. Trajectory consists in a sort of vertical and horizontal hyphens, and 0 represents where is the current center. Actually the position of the center  in an almost real time, because there is some delay in reading the shared memory and in rebuilding the image. When the user presses ctrl+C on keyboard, this process closes all file descriptor, unlinks semaphores and terminates its own execution.
 NOTE: DO NOT RESIZE THIS PROCESS WINDOW, IT WILL IMMEDIATELY CRASH THE PROCESS!
+
